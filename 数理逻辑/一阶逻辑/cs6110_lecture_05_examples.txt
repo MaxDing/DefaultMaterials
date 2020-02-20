@@ -1,0 +1,100 @@
+(set-option :array-extensional true)
+(define-sort A () (Array Int Int))
+(declare-const i Int)
+(declare-const e Int)
+(declare-const a A)
+(assert (not
+  (=> (= (select a i) e) (= (store a i e) a))))
+(check-sat)
+(exit)
+
+
+
+(declare-const x Int)
+(declare-const y Int)
+(declare-const z Int)
+
+(assert (not
+  (=>
+    (and (<= x y) (= z (+ x 1)))
+    (<= z y))))
+
+(check-sat)
+(exit)
+
+
+
+(declare-const x Int)
+(declare-const y Int)
+(declare-const z Int)
+
+(assert (not
+  (=>
+    (and (<= x y) (= z (- x 1)))
+    (<= z y))))
+
+(check-sat)
+(exit)
+
+
+
+(declare-const dogs Int)
+(declare-const cats Int)
+(declare-const mice Int)
+
+(assert (> dogs 0))
+(assert (> cats 0))
+(assert (> mice 0))
+
+(assert (= (+ dogs cats mice) 100))
+(assert (= (+ (* dogs 1500) (* cats 100) (* mice 25)) 10000))
+(check-sat)
+(exit)
+
+
+
+; Solution for our simple scheduling problem.
+; Solution is satisfiable if jobs can be scheduled in T time units,
+; and so keep incrementing T until the problem becomes satisfiable.
+; t11, t12,... are starting times of phases of jobs
+; Once the problem becomes satisfiable, you can use get-model
+; to get a schedule.
+(declare-const T Int)
+(assert (= T 5))
+
+(declare-const t11 Int)
+(declare-const t12 Int)
+(declare-const t21 Int)
+(declare-const t22 Int)
+(declare-const t31 Int)
+(declare-const t32 Int)
+
+; starting times have to be >= 0
+(assert (>= t11 0))
+(assert (>= t21 0))
+(assert (>= t31 0))
+
+; second phase can start only after we are done with first phase
+(assert (>= t12 (+ t11 2)))
+(assert (>= t22 (+ t21 3)))
+(assert (>= t32 (+ t31 2)))
+
+; second phase has to finish before T
+(assert (>= T (+ t12 1)))
+(assert (>= T (+ t22 1)))
+(assert (>= T (+ t32 3)))
+
+; job constraints for Machine 1
+(assert (or (>= t21 (+ t11 2)) (>= t11 (+ t21 3))))
+(assert (or (>= t31 (+ t11 2)) (>= t11 (+ t31 2))))
+(assert (or (>= t31 (+ t21 3)) (>= t21 (+ t31 2))))
+
+; job constraints for Machine 2
+(assert (or (>= t22 (+ t12 1)) (>= t12 (+ t22 1))))
+(assert (or (>= t32 (+ t12 1)) (>= t12 (+ t32 3))))
+(assert (or (>= t32 (+ t22 1)) (>= t22 (+ t32 3))))
+
+(check-sat)
+;(get-model)
+(exit)
+
